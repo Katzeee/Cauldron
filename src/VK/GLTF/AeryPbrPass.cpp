@@ -1,12 +1,12 @@
 #include "stdafx.h"
+#include "AeryPbrPass.h"
+
 #include "Misc/Async.h"
 #include "GltfHelpers.h"
 #include "Base/Helper.h"
 #include "Base/ShaderCompilerHelper.h"
 #include "Base/ExtDebugUtils.h"
 #include "PostProc/Skydome.h"
-
-#include "AeryPbrPass.h"
 
 namespace CAULDRON_VK
 {

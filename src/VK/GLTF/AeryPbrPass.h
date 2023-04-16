@@ -1,15 +1,13 @@
 #pragma once
 
 #include "GLTFTexturesAndBuffers.h"
+#include "GltfPbrPass.h"
 #include "PostProc/SkyDome.h"
 #include "Base/GBuffer.h"
 #include "../common/GLTF/GltfPbrMaterial.h"
-#include "GLTF/GltfPbrPass.h"
 
 namespace CAULDRON_VK
 {
-    // Material, primitive and mesh structs specific for the PBR pass (you might want to compare these structs with the ones used for the depth pass in GltfDepthPass.h)
-
     class AeryPbrPass
     {
     public:

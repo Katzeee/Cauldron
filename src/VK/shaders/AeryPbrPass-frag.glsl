@@ -7,9 +7,6 @@
 #extension GL_ARB_shading_language_420pack : enable
 // this makes the structures declared with a scalar layout match the c structures
 #extension GL_EXT_scalar_block_layout : enable
-#ifdef HAS_VRS_RT
-//#extension GL_EXT_fragment_shading_rate : require
-#endif
 
 precision highp float;
 
@@ -44,14 +41,6 @@ layout(location = HAS_MOTION_VECTORS_RT) out vec2 Output_motionVect;
 
 #ifdef HAS_NORMALS_RT
     layout (location = HAS_NORMALS_RT) out vec4 Output_normal;
-#endif
-
-#ifdef HAS_UPSCALE_REACTIVE_RT
-    layout (location = HAS_UPSCALE_REACTIVE_RT) out float Output_upscaleReactive;
-#endif
-
-#ifdef HAS_UPSCALE_TRANSPARENCY_AND_COMPOSITION_RT
-    layout (location = HAS_UPSCALE_TRANSPARENCY_AND_COMPOSITION_RT) out float Output_upscaleTransparencyAndComposition;
 #endif
 
 //--------------------------------------------------------------------------------------
@@ -109,13 +98,8 @@ void main()
     float alphaRoughness = perceptualRoughness * perceptualRoughness;
 
 #ifdef HAS_MOTION_VECTORS_RT
-    vec2 cancelJitter = myPerFrame.u_mCameraPrevJitter - myPerFrame.u_mCameraCurrJitter;
-    Output_motionVect =
-        (Input.PrevPosition.xy / Input.PrevPosition.w) - (Input.CurrPosition.xy / Input.CurrPosition.w)
-                + cancelJitter;
-
-    // Transform motion vector from NDC space to UV space (+Y is top-down).
-    Output_motionVect *= vec2(0.5f, -0.5f);
+    Output_motionVect = Input.CurrPosition.xy / Input.CurrPosition.w -
+                        Input.PrevPosition.xy / Input.PrevPosition.w;
 #endif
 
 #ifdef HAS_SPECULAR_ROUGHNESS_RT
@@ -133,21 +117,6 @@ void main()
 #ifdef HAS_FORWARD_RT
 	Output_finalColor = vec4(doPbrLighting(Input, myPerFrame, diffuseColor, specularColor, perceptualRoughness), alpha);
     Output_finalColor = mix(Output_finalColor, vec4(myPerFrame.u_WireframeOptions.rgb, 1.0), myPerFrame.u_WireframeOptions.w);
+    Output_finalColor = vec4(1,0,1,1);
 #endif
-   
-#ifdef HAS_UPSCALE_TRANSPARENCY_AND_COMPOSITION_RT
-    #if defined(HAS_NORMAL_UV_TRANSFORM)
-        || defined(HAS_EMISSIVE_UV_TRANSFORM)
-        || defined(HAS_OCCLSION_UV_TRANSFORM)
-        || defined(HAS_BASECOLOR_UV_TRANSFORM)
-        || defined(HAS_METALLICROUGHNESS_UV_TRANSFORM)
-        || defined(HAS_SPECULARGLOSSINESS_UV_TRANSFORM)
-        || defined(HAS_DIFFUSE_UV_TRANSFORM)
-        float hasAnimatedTexture = 1.f;
-    #else
-        float hasAnimatedTexture = 0.f;
-    #endif
-    Output_upscaleTransparencyAndComposition = max(alpha, hasAnimatedTexture);
-#endif
-
 }

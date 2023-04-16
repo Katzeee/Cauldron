@@ -13,6 +13,8 @@ set(GLTF_src
     GLTF/GltfMotionVectorsPass.h
     GLTF/GLTFTexturesAndBuffers.cpp
     GLTF/GLTFTexturesAndBuffers.h
+    GLTF/AeryPbrPass.cpp
+    GLTF/AeryPbrPass.h
 )
 
 set(PostProc_src
@@ -140,6 +142,8 @@ set(Shaders_GLTF_src
     ${CMAKE_CURRENT_SOURCE_DIR}/shaders/skinning.h
     ${CMAKE_CURRENT_SOURCE_DIR}/shaders/GLTFVertexFactory.glsl
     ${CMAKE_CURRENT_SOURCE_DIR}/shaders/perFrameStruct.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/shaders/AeryPbrPass-frag.glsl
+    ${CMAKE_CURRENT_SOURCE_DIR}/shaders/AeryPbrPass-vert.glsl
 )
 
 add_library (Cauldron_VK STATIC ${GLTF_src} ${PostProc_src} ${Base_src} ${Widgets_src} ${Extensions_src})
