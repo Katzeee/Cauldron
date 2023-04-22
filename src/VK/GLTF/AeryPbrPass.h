@@ -8,6 +8,16 @@
 
 namespace CAULDRON_VK
 {
+    enum class ShadowMode
+    {
+        None,
+        HardShadow,
+        PCF,
+        PCSS,
+        VSM,
+        ModesNum
+    };
+
     class AeryPbrPass
     {
     public:
@@ -29,16 +39,6 @@ namespace CAULDRON_VK
             operator float() { return -m_depth; }
         };
 
-        enum class ShadowMode
-        {
-            None,
-            HardShadow,
-            PCF,
-            PCSS,
-            VSM,
-            ModesNum
-        };
-
         void OnCreate(
             Device* pDevice,
             UploadHeap* pUploadHeap,
@@ -50,6 +50,7 @@ namespace CAULDRON_VK
             bool bUseSSAOMask,
             std::vector<VkImageView>& ShadowMapViewPool,
             GBufferRenderPass *pRenderPass,
+            ShadowMode shadowMode,
             AsyncPool *pAsyncPool = NULL,
             bool invertedDepth = false
         );

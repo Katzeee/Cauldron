@@ -26,6 +26,7 @@ namespace CAULDRON_VK
         bool bUseSSAOMask,
         std::vector<VkImageView>& ShadowMapViewPool,
         GBufferRenderPass *pRenderPass,
+        ShadowMode shadowMode,
         AsyncPool *pAsyncPool,
         bool invertedDepth
     )
@@ -37,7 +38,7 @@ namespace CAULDRON_VK
         m_pDynamicBufferRing = pDynamicBufferRing;
         m_pGLTFTexturesAndBuffers = pGLTFTexturesAndBuffers;
         m_bInvertedDepth = invertedDepth;
-        m_shadowMode = ShadowMode::PCF;
+        m_shadowMode = shadowMode;
 
         //set bindings for the render targets
         //
