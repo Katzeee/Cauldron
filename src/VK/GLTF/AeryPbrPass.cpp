@@ -37,10 +37,12 @@ namespace CAULDRON_VK
         m_pDynamicBufferRing = pDynamicBufferRing;
         m_pGLTFTexturesAndBuffers = pGLTFTexturesAndBuffers;
         m_bInvertedDepth = invertedDepth;
+        m_shadowMode = ShadowMode::PCF;
 
         //set bindings for the render targets
         //
         DefineList rtDefines;
+        rtDefines["SHADOW_MODE"] = std::to_string(static_cast<int>(m_shadowMode));
         m_pRenderPass->GetCompilerDefines(rtDefines);
 
         // Load BRDF look up table for the PBR shader
@@ -95,8 +97,8 @@ namespace CAULDRON_VK
             info.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
             info.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
             info.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-            info.compareEnable = VK_TRUE;
-            info.compareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+            //info.compareEnable = VK_TRUE;
+            //info.compareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
             info.minLod = -1000;
             info.maxLod = 1000;
             info.maxAnisotropy = 1.0f;

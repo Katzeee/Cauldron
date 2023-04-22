@@ -29,6 +29,16 @@ namespace CAULDRON_VK
             operator float() { return -m_depth; }
         };
 
+        enum class ShadowMode
+        {
+            None,
+            HardShadow,
+            PCF,
+            PCSS,
+            VSM,
+            ModesNum
+        };
+
         void OnCreate(
             Device* pDevice,
             UploadHeap* pUploadHeap,
@@ -72,6 +82,7 @@ namespace CAULDRON_VK
         VkSampler m_brdfLutSampler = VK_NULL_HANDLE;
 
         bool                     m_bInvertedDepth;
+        ShadowMode m_shadowMode;
 
         void CreateDescriptorTableForMaterialTextures(PBRMaterial *tfmat, std::map<std::string, VkImageView> &texturesBase, SkyDome *pSkyDome, std::vector<VkImageView>& ShadowMapViewPool, bool bUseSSAOMask);
         void CreateDescriptors(int inverseMatrixBufferSize, DefineList *pAttributeDefines, PBRPrimitives *pPrimitive, bool bUseSSAOMask);
