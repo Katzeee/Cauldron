@@ -17,6 +17,64 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+// MC Begin
+#ifdef ID_shadowMap
+
+// sampling shadowmap would return shadow depth
+layout(set = 1, binding = ID_shadowMap) uniform sampler2D u_shadowMap[MAX_SHADOW_INSTANCES];
+
+// Hard Shadow
+float HardShadow(int shadowIndex, vec2 uv, float z)
+{
+    float shadow = 0.0;
+    float shadowDepth = texture(u_shadowMap[shadowIndex], uv).r;
+    shadow = (z <= shadowDepth ? 1 : 0);
+    return shadow;
+}
+
+// PCF
+// @todo：better effect
+float FilterShadow(int shadowIndex, vec2 uv, float z)
+{
+    float shadow = 0.0;
+    ivec2 texDim = textureSize(u_shadowMap[shadowIndex], 0);
+    float scale = 1.0;
+    float dx = scale * 1.0 / float(texDim.x);
+    float dy = scale * 1.0 / float(texDim.y);
+
+
+    int kernelLevel = 2;
+    int kernelWidth = 2 * kernelLevel + 1;
+    for (int i = -kernelLevel; i <= kernelLevel; i++)
+    {
+        for (int j = -kernelLevel; j <= kernelLevel; j++)
+        {
+            float shadowDepth = texture(u_shadowMap[shadowIndex], uv + vec2(dx*i, dy*j)).r;
+            shadow += (z <= shadowDepth ? 1 : 0);
+        }
+    }
+
+    shadow /= (kernelWidth*kernelWidth);
+    return shadow;
+}
+
+// PCSS
+// @todo：implements
+float PCSS(int shadowIndex, vec2 uv, float z)
+{
+    return 0;
+}
+
+// VSM
+// @todo：implements
+float VarianceShadow(int shadowIndex, vec2 uv, float z)
+{
+    return 0;
+}
+
+#endif // ID_shadowMap
+
+/*
 #ifdef ID_shadowMap
 layout(set = 1, binding = ID_shadowMap) uniform sampler2DShadow u_shadowMap[MAX_SHADOW_INSTANCES];
 #endif
@@ -46,6 +104,9 @@ float FilterShadow(int shadowIndex, vec3 uv)
 #endif
     return shadow;
 }
+*/
+
+// MC End
 
 //
 // Project world space point onto shadowmap
@@ -90,8 +151,20 @@ float DoSpotShadow(vec3 vPosition, Light light)
 
     shadowTexCoord.z -= light.depthBias;
 
-    return FilterShadow(light.shadowMapIndex, shadowTexCoord.xyz);
-#else
+// MC Begin
+#if (SHADOW_MODE == 0)
+    return 1.0f;
+#elif (SHADOW_MODE == 1)
+    return HardShadow(light.shadowMapIndex, shadowTexCoord.xy, shadowTexCoord.z);
+#elif (SHADOW_MODE == 2)
+    return FilterShadow(light.shadowMapIndex, shadowTexCoord.xy, shadowTexCoord.z);
+#elif (SHADOW_MODE == 3)
+    return PCSS(light.shadowMapIndex, shadowTexCoord.xy, shadowTexCoord.z);
+#elif (SHADOW_MODE == 4)
+    return VarianceShadow(light.shadowMapIndex, shadowTexCoord.xy, shadowTexCoord.z);
+#endif // SHADOW_MODE
+// MC end
+#else 
     return 1.0f;
 #endif
 }
