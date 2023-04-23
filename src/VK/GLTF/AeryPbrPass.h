@@ -5,19 +5,10 @@
 #include "PostProc/SkyDome.h"
 #include "Base/GBuffer.h"
 #include "../common/GLTF/GltfPbrMaterial.h"
+#include "../common/GLTF/GltfCommon.h"
 
 namespace CAULDRON_VK
 {
-    enum class ShadowMode
-    {
-        None,
-        HardShadow,
-        PCF,
-        PCSS,
-        VSM,
-        ModesNum
-    };
-
     class AeryPbrPass
     {
     public:

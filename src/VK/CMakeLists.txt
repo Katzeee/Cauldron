@@ -1,6 +1,7 @@
 include(common)
 
 set(GLTF_src
+    GLTF/GltfCommon.h
     GLTF/GltfBBoxPass.cpp
     GLTF/GltfBBoxPass.h
     GLTF/GltfDepthPass.cpp
