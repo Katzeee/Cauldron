@@ -43,6 +43,7 @@ namespace CAULDRON_VK
         DynamicBufferRing *pDynamicBufferRing,
         StaticBufferPool *pStaticBufferPool,
         GLTFTexturesAndBuffers *pGLTFTexturesAndBuffers,
+        ShadowMode shadowMode,
         AsyncPool *pAsyncPool)
     {
         m_pDevice = pDevice;
@@ -147,7 +148,10 @@ namespace CAULDRON_VK
                     const json &primitive = primitives[p];
                     DepthPrimitives *pPrimitive = &tfmesh->m_pPrimitives[p];
 
-                    ExecAsyncIfThereIsAPool(pAsyncPool, [this, i, &primitive, pPrimitive]()
+                    // MC Begin
+                    ExecAsyncIfThereIsAPool(pAsyncPool, [this, i, &primitive, pPrimitive, shadowMode]()
+                    //ExecAsyncIfThereIsAPool(pAsyncPool, [this, i, &primitive, pPrimitive]()
+                    // MC End
                     {
                         // Set Material
                         //
@@ -177,6 +181,10 @@ namespace CAULDRON_VK
                         // holds all the #defines from materials, geometry and texture IDs, the VS & PS shaders need this to get the bindings and code paths
                         //
                         DefineList defines = pPrimitive->m_pMaterial->m_defines;
+
+                        // MC Begin
+                        defines["SHADOW_MODE"] = std::to_string(static_cast<int>(shadowMode));
+                        // MC End
 
                         // create an input layout from the required attributes
                         // shader's can tell the slots from the #defines
@@ -362,7 +370,11 @@ namespace CAULDRON_VK
         rs.depthBiasSlopeFactor = 0;
         rs.lineWidth = 1.0f;
 
-        VkPipelineColorBlendAttachmentState att_state[1];
+        // MC Begin
+        VkPipelineColorBlendAttachmentState att_state[2];
+        //VkPipelineColorBlendAttachmentState att_state[1];
+        // MC End
+
         att_state[0].colorWriteMask = 0xf;
         att_state[0].blendEnable = VK_TRUE;
         att_state[0].alphaBlendOp = VK_BLEND_OP_ADD;
@@ -372,13 +384,27 @@ namespace CAULDRON_VK
         att_state[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
         att_state[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
 
+        // MC Begin
+        att_state[1].colorWriteMask = 0xf;
+        att_state[1].blendEnable = VK_TRUE;
+        att_state[1].alphaBlendOp = VK_BLEND_OP_ADD;
+        att_state[1].colorBlendOp = VK_BLEND_OP_ADD;
+        att_state[1].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+        att_state[1].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        att_state[1].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+        att_state[1].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        // MC End
+
         // Color blend state
 
         VkPipelineColorBlendStateCreateInfo cb;
         cb.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
         cb.flags = 0;
         cb.pNext = NULL;
-        cb.attachmentCount = 0; //set to 1 when transparency
+        // MC Begin
+        //cb.attachmentCount = 0; //set to 1 when transparency
+        cb.attachmentCount = 1; //set to 1 when transparency
+        // MC End
         cb.pAttachments = att_state;
         cb.logicOpEnable = VK_FALSE;
         cb.logicOp = VK_LOGIC_OP_NO_OP;

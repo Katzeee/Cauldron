@@ -35,6 +35,10 @@ layout (location = 0) in VS2PS Input;
 
 PerFrame myPerFrame;
 
+#if (SHADOW_MODE == 4)
+    layout (location = 0) out float outMoment;
+#endif
+
 //--------------------------------------------------------------------------------------
 // Texture definitions
 //--------------------------------------------------------------------------------------
@@ -49,4 +53,12 @@ void main()
 {
 	myPerFrame.u_LodBias = 0.0;
 	discardPixelIfAlphaCutOff(Input);
+
+// MC Begin
+#if (SHADOW_MODE == 4)
+	outMoment = gl_FragCoord.z * gl_FragCoord.z;
+	//@todo: outMoment doesn't work.
+	outMoment = 0;
+#endif
+// MC End
 }

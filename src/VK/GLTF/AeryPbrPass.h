@@ -5,7 +5,7 @@
 #include "PostProc/SkyDome.h"
 #include "Base/GBuffer.h"
 #include "../common/GLTF/GltfPbrMaterial.h"
-#include "../common/GLTF/GltfCommon.h"
+#include "GLTF/MCCommon.h"
 
 namespace CAULDRON_VK
 {
@@ -40,6 +40,7 @@ namespace CAULDRON_VK
             SkyDome *pSkyDome,
             bool bUseSSAOMask,
             std::vector<VkImageView>& ShadowMapViewPool,
+            std::vector<VkImageView>& MomentMapViewPool,
             GBufferRenderPass *pRenderPass,
             ShadowMode shadowMode,
             AsyncPool *pAsyncPool = NULL,
@@ -66,7 +67,7 @@ namespace CAULDRON_VK
 
         Device   *m_pDevice;
         GBufferRenderPass *m_pRenderPass;
-        VkSampler m_samplerPbr = VK_NULL_HANDLE, m_samplerShadow = VK_NULL_HANDLE;
+        VkSampler m_samplerPbr = VK_NULL_HANDLE, m_samplerShadow = VK_NULL_HANDLE, m_samplerMoment = VK_NULL_HANDLE;
 
         // PBR Brdf
         Texture m_brdfLutTexture;
@@ -76,7 +77,7 @@ namespace CAULDRON_VK
         bool                     m_bInvertedDepth;
         ShadowMode m_shadowMode;
 
-        void CreateDescriptorTableForMaterialTextures(PBRMaterial *tfmat, std::map<std::string, VkImageView> &texturesBase, SkyDome *pSkyDome, std::vector<VkImageView>& ShadowMapViewPool, bool bUseSSAOMask);
+        void CreateDescriptorTableForMaterialTextures(PBRMaterial *tfmat, std::map<std::string, VkImageView> &texturesBase, SkyDome *pSkyDome, std::vector<VkImageView>& ShadowMapViewPool, std::vector<VkImageView>& MomentMapViewPool, bool bUseSSAOMask);
         void CreateDescriptors(int inverseMatrixBufferSize, DefineList *pAttributeDefines, PBRPrimitives *pPrimitive, bool bUseSSAOMask);
         void CreatePipeline(std::vector<VkVertexInputAttributeDescription> layout, const DefineList &defines, PBRPrimitives *pPrimitive);
     };

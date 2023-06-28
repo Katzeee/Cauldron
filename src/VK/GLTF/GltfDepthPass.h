@@ -19,6 +19,7 @@
 #pragma once
 
 #include "GLTFTexturesAndBuffers.h"
+#include "GLTF/MCCommon.h"
 
 namespace CAULDRON_VK
 {
@@ -73,6 +74,7 @@ namespace CAULDRON_VK
             DynamicBufferRing *pDynamicBufferRing,
             StaticBufferPool *pStaticBufferPool,
             GLTFTexturesAndBuffers *pGLTFTexturesAndBuffers,
+            ShadowMode shadowMode,
             AsyncPool *pAsyncPool = NULL);
 
         void OnDestroy();

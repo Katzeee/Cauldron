@@ -65,12 +65,20 @@ float PCSS(int shadowIndex, vec2 uv, float z)
     return 0;
 }
 
+#ifdef ID_momentMap
+layout(set = 1, binding = ID_momentMap) uniform sampler2D u_momentMap[MAX_SHADOW_INSTANCES];
+
 // VSM
 // @todo：implements
 float VarianceShadow(int shadowIndex, vec2 uv, float z)
 {
-    return 0;
+    float shadow = 0.0;
+    float shadowDepth = texture(u_momentMap[shadowIndex], uv).r;
+    shadow = (z <= shadowDepth ? 1 : 0);
+    shadow = 1-shadowDepth;
+    return shadow;
 }
+#endif // ID_momentMap
 
 #endif // ID_shadowMap
 

@@ -25,6 +25,7 @@ namespace CAULDRON_VK
         SkyDome *pSkyDome,
         bool bUseSSAOMask,
         std::vector<VkImageView>& ShadowMapViewPool,
+        std::vector<VkImageView>& MomentMapViewPool,
         GBufferRenderPass *pRenderPass,
         ShadowMode shadowMode,
         AsyncPool *pAsyncPool,
@@ -107,13 +108,29 @@ namespace CAULDRON_VK
             assert(res == VK_SUCCESS);
         }
 
+        {
+            VkSamplerCreateInfo info = {};
+            info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+            info.magFilter = VK_FILTER_LINEAR;
+            info.minFilter = VK_FILTER_LINEAR;
+            info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+            info.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+            info.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+            info.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+            info.minLod = -1000;
+            info.maxLod = 1000;
+            info.maxAnisotropy = 1.0f;
+            VkResult res = vkCreateSampler(pDevice->GetDevice(), &info, NULL, &m_samplerMoment);
+            assert(res == VK_SUCCESS);
+        }
+
         // Create default material, this material will be used if none is assigned
         //
         {
             SetDefaultMaterialParamters(&m_defaultMaterial.m_pbrMaterialParameters);
 
             std::map<std::string, VkImageView> texturesBase;
-            CreateDescriptorTableForMaterialTextures(&m_defaultMaterial, texturesBase, pSkyDome, ShadowMapViewPool, bUseSSAOMask);
+            CreateDescriptorTableForMaterialTextures(&m_defaultMaterial, texturesBase, pSkyDome, ShadowMapViewPool, MomentMapViewPool, bUseSSAOMask);
         }
 
         // Load PBR 2.0 Materials
@@ -137,7 +154,7 @@ namespace CAULDRON_VK
             for (auto const& value : textureIds)
                 texturesBase[value.first] = m_pGLTFTexturesAndBuffers->GetTextureViewByID(value.second);
 
-            CreateDescriptorTableForMaterialTextures(tfmat, texturesBase, pSkyDome, ShadowMapViewPool, bUseSSAOMask);
+            CreateDescriptorTableForMaterialTextures(tfmat, texturesBase, pSkyDome, ShadowMapViewPool, MomentMapViewPool, bUseSSAOMask);
         }
 
         // Load Meshes
@@ -204,7 +221,7 @@ namespace CAULDRON_VK
     // CreateDescriptorTableForMaterialTextures
     //
     //--------------------------------------------------------------------------------------
-    void AeryPbrPass::CreateDescriptorTableForMaterialTextures(PBRMaterial *tfmat, std::map<std::string, VkImageView> &texturesBase, SkyDome *pSkyDome, std::vector<VkImageView>& ShadowMapViewPool, bool bUseSSAOMask)
+    void AeryPbrPass::CreateDescriptorTableForMaterialTextures(PBRMaterial *tfmat, std::map<std::string, VkImageView> &texturesBase, SkyDome *pSkyDome, std::vector<VkImageView>& ShadowMapViewPool, std::vector<VkImageView>& MomentMapViewPool, bool bUseSSAOMask)
     {
         std::vector<uint32_t> descriptorCounts;
         // count the number of textures to init bindings and descriptor
@@ -234,6 +251,15 @@ namespace CAULDRON_VK
             {
                 assert(ShadowMapViewPool.size() <= MaxShadowInstances);
                 tfmat->m_textureCount += (int)ShadowMapViewPool.size();//1;
+                // this is an array of samplers/textures
+                // We should set the exact number of descriptors to avoid validation errors
+                descriptorCounts.push_back(MaxShadowInstances);
+            }
+
+            if (!MomentMapViewPool.empty())
+            {
+                assert(MomentMapViewPool.size() <= MaxShadowInstances);
+                tfmat->m_textureCount += (int)MomentMapViewPool.size();//1;
                 // this is an array of samplers/textures
                 // We should set the exact number of descriptors to avoid validation errors
                 descriptorCounts.push_back(MaxShadowInstances);
@@ -296,6 +322,15 @@ namespace CAULDRON_VK
                 SetDescriptorSet(m_pDevice->GetDevice(), cnt, descriptorCounts[cnt], ShadowMapViewPool, &m_samplerShadow, tfmat->m_texturesDescriptorSet);
                 cnt++;
             }
+
+            // 5) Up to MaxShadowInstances SRVs for the momentmaps
+            if (!MomentMapViewPool.empty())
+            {
+                tfmat->m_pbrMaterialParameters.m_defines["ID_momentMap"] = std::to_string(cnt);
+
+                SetDescriptorSet(m_pDevice->GetDevice(), cnt, descriptorCounts[cnt], MomentMapViewPool, &m_samplerMoment, tfmat->m_texturesDescriptorSet);
+                cnt++;
+            }
         }
     }
 
@@ -356,6 +391,7 @@ namespace CAULDRON_VK
 
         vkDestroySampler(m_pDevice->GetDevice(), m_samplerPbr, nullptr);
         vkDestroySampler(m_pDevice->GetDevice(), m_samplerShadow, nullptr);
+        vkDestroySampler(m_pDevice->GetDevice(), m_samplerMoment, nullptr);
 
         vkDestroyImageView(m_pDevice->GetDevice(), m_brdfLutView, NULL);
         vkDestroySampler(m_pDevice->GetDevice(), m_brdfLutSampler, nullptr);
